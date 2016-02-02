@@ -11,7 +11,6 @@ class Jeff(StateMachineGamer):
 
     def stateMachineMetaGame(self, timeout):
         self.timeout = timeout
-        pass
 
     def stateMachineSelectMove(self, timeout):
         moves = self.getStateMachine().getLegalMoves(self.getCurrentState(), self.getRole())
