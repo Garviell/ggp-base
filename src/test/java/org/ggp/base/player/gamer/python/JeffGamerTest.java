@@ -8,18 +8,11 @@ import org.ggp.base.util.match.Match;
 import org.junit.Assert;
 import org.junit.Test;
 
-/**
- * Unit tests for the PythonGamer class, to verify that we can actually
- * instantiate a Python-based gamer and have it play moves in a game.
- *
- * @author Sam
- */
 public class JeffGamerTest extends Assert {
     @Test
-    public void testPythonGamer() {
+    public void testJeffGamer() {
         try {
             Gamer g = new JeffPythonGamerStub();
-            System.out.printf(g.getName());
             assertEquals("Jeff", g.getName());
 
             Match m = new Match("", -1, 1000, 1000, GameRepository.getDefaultRepository().getGame("ticTacToe"), "");

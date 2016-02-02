@@ -96,6 +96,7 @@ eclipse {
  */
 test {
     include 'org/ggp/base/test/AllTests.class'
+    testLogging.showStandardStreams = true
 }
 
 
