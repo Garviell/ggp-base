@@ -9,6 +9,7 @@ import org.ggp.base.player.request.grammar.AbortRequest;
 import org.ggp.base.player.request.grammar.InfoRequest;
 import org.ggp.base.player.request.grammar.PlayRequest;
 import org.ggp.base.player.request.grammar.PreviewRequest;
+import org.ggp.base.player.request.grammar.UnityRequest;
 import org.ggp.base.player.request.grammar.Request;
 import org.ggp.base.player.request.grammar.StartRequest;
 import org.ggp.base.player.request.grammar.StopRequest;
@@ -39,6 +40,10 @@ public final class RequestFactory
             else if (type.equals("start"))
             {
                 return createStart(gamer, list);
+            }
+            else if (type.equals("unity"))
+            {
+                return createUnity(gamer, list);
             }
             else if (type.equals("stop"))
             {
@@ -81,6 +86,30 @@ public final class RequestFactory
         List<GdlTerm> moves = parseMoves(arg2);
 
         return new PlayRequest(gamer, matchId, moves);
+    }
+
+    private UnityRequest createUnity(Gamer gamer, SymbolList list) throws GdlFormatException
+    {
+        if (list.size() < 6)
+        {
+            throw new IllegalArgumentException("Expected at least 5 arguments!");
+        }
+
+        SymbolAtom arg1 = (SymbolAtom) list.get(1);
+        SymbolAtom arg2 = (SymbolAtom) list.get(2);
+        SymbolAtom arg3 = (SymbolAtom) list.get(3);
+        SymbolAtom arg4 = (SymbolAtom) list.get(4);
+        SymbolAtom arg5 = (SymbolAtom) list.get(5);
+
+        String matchId = arg1.getValue();
+        GdlConstant role = (GdlConstant) GdlFactory.createTerm(arg2);
+        String gameName = arg3.getValue();
+        int startClock = Integer.valueOf(arg4.getValue());
+        int playClock = Integer.valueOf(arg5.getValue());
+
+        // For now, there are only five standard arguments. If there are any
+        // new standard arguments added to START, they should be added here.
+        return new UnityRequest(gamer, role, matchId, gameName, 5000, 5000);
     }
 
     private StartRequest createStart(Gamer gamer, SymbolList list) throws GdlFormatException

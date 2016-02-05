@@ -12,6 +12,7 @@ import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.exception.MetaGamingException;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
+import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
@@ -19,6 +20,7 @@ import org.ggp.base.util.match.Match;
 import org.ggp.base.util.observer.Event;
 import org.ggp.base.util.observer.Observer;
 import org.ggp.base.util.observer.Subject;
+import org.ggp.base.util.statemachine.Move;
 
 
 /**
@@ -40,6 +42,7 @@ public abstract class Gamer implements Subject
         // the player is available for starting a new match.
         match = null;
         roleName = null;
+        System.out.println("gamer");
     }
 
     /* The following values are recommendations to the implementations
@@ -96,6 +99,10 @@ public abstract class Gamer implements Subject
 
     public final void setRoleName(GdlConstant roleName) {
         this.roleName = roleName;
+    }
+    public List<Move> getLegalMoves(String ss){
+        List<Move> dudu = new ArrayList<Move>();
+        return dudu;
     }
 
     // ==== Observer Stuff ====

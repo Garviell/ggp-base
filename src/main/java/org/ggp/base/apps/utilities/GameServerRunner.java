@@ -33,7 +33,9 @@ import org.ggp.base.util.symbol.factory.exceptions.SymbolFormatException;
  */
 public final class GameServerRunner
 {
-    public static void main(String[] args) throws IOException, SymbolFormatException, GdlFormatException, InterruptedException, GoalDefinitionException
+    public static void main(String[] args) throws IOException, SymbolFormatException,
+                                                  GdlFormatException, InterruptedException,
+                                                  GoalDefinitionException
     {
         // Extract the desired configuration from the command line.
         String tourneyName = args[0];
@@ -58,7 +60,9 @@ public final class GameServerRunner
         }
         int expectedRoles = Role.computeRoles(game.getRules()).size();
         if (hostNames.size() != expectedRoles) {
-            throw new RuntimeException("Invalid number of players for game " + gameKey + ": " + hostNames.size() + " vs " + expectedRoles);
+            throw new RuntimeException("Invalid number of players for game " +
+                                       gameKey + ": " + hostNames.size() +
+                                       " vs " + expectedRoles);
         }
         Match match = new Match(matchName, -1, startClock, playClock, game, "");
         match.setPlayerNamesFromHost(playerNames);

@@ -144,6 +144,17 @@ task playerRunner(type: JavaExec) {
     jvmArgs = playerJvmArgs
 }
 
+task jeffRunner(type: JavaExec) {
+    main = 'org.ggp.base.apps.player.JeffRunner'
+    classpath = sourceSets.main.runtimeClasspath
+    //These can be set on the command line with
+    //-Pport=9147 and -Pgamer=RandomGamer as arguments.
+    doFirst {
+        args = [port]
+    }
+    jvmArgs = playerJvmArgs
+}
+
 task kiosk(type: JavaExec) {
     main = 'org.ggp.base.apps.kiosk.Kiosk'
     classpath = sourceSets.main.runtimeClasspath
