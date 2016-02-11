@@ -96,7 +96,8 @@ public final class GamePlayer extends Thread implements Subject
         boolean debug = true;
         if (debug){
             try {
-                Request request = new RequestFactory().create(gamer, "( UNITY MatchA xplayer ticTacToe 5000 5000 )");
+                Request request = new RequestFactory().create(gamer,
+                        "( UNITY MatchA xplayer ticTacToe 5000 5000 )");
                 System.out.println(request.process(System.currentTimeMillis()));
                 System.out.println(gamer.selectMove(5000));
                 System.out.println(gamer.getLegalMoves(""));

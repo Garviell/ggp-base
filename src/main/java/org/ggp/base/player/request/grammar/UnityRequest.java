@@ -44,7 +44,7 @@ public final class UnityRequest extends Request
         // Ensure that we aren't already playing a match. If we are,
         // ignore the message, saying that we're busy.
         if (gamer.getMatch() != null) {
-            GamerLogger.logError("GamePlayer", "Got start message while already busy playing a game: ignoring.");
+            GamerLogger.logError("GamePlayer", "Got unity message while already busy playing a game: ignoring.");
             gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
             return "busy";
         }
