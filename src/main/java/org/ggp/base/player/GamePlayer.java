@@ -38,8 +38,7 @@ public class GamePlayer extends Thread implements Subject
     protected ServerSocket listener;
     protected final List<Observer> observers;
 
-    public GamePlayer(int port, Gamer gamer) throws IOException
-    {
+    public GamePlayer(int port, Gamer gamer) throws IOException {
         observers = new ArrayList<Observer>();
         listener = null;
         System.out.println("GamePlayer constructor");
@@ -94,7 +93,6 @@ public class GamePlayer extends Thread implements Subject
     @Override
     public void run()
     {
-        boolean debug = false;
             while (listener != null) {
                 try {
                     Socket connection = listener.accept();
