@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.ggp.base.player.GamePlayer;
+import org.ggp.base.player.UnityPlayer;
 import org.ggp.base.player.gamer.Gamer;
 import org.ggp.base.util.reflection.ProjectSearcher;
 
@@ -46,6 +46,6 @@ public final class JeffRunner
         }
         Gamer gamer = (Gamer) chosenGamerClass.newInstance();
         System.out.println("JeffRunner");
-        new GamePlayer(port, gamer).start();
+        new UnityPlayer(port, gamer).start();
     }
 }

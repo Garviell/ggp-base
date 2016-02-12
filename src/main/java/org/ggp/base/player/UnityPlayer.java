@@ -1,6 +1,7 @@
 package org.ggp.base.player;
 
 import java.io.IOException;
+import java.lang.InterruptedException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -31,70 +32,33 @@ import org.ggp.base.util.symbol.grammar.SymbolAtom;
 import org.ggp.base.util.symbol.grammar.SymbolList;
 
 
-public class GamePlayer extends Thread implements Subject
+public final class UnityPlayer extends GamePlayer
 {
-    protected final int port;
-    protected final Gamer gamer;
-    protected ServerSocket listener;
-    protected final List<Observer> observers;
-
-    public GamePlayer(int port, Gamer gamer) throws IOException
-    {
-        observers = new ArrayList<Observer>();
-        listener = null;
-        System.out.println("GamePlayer constructor");
-
-        while(listener == null) {
-            try {
-                listener = new ServerSocket(port);
-            } catch (IOException ex) {
-                listener = null;
-                port++;
-                System.err.println("Failed to start gamer on port: " +
-                        (port-1) + " trying port " + port);
-            }
-        }
-
-        this.port = port;
-        this.gamer = gamer;
+    protected final Thread update;
+    public UnityPlayer(int port, Gamer gamer) throws IOException {
+        super(port, gamer);
+        this.update = new Update(9149, gamer);
     }
+
 
     @Override
-    public void addObserver(Observer observer)
-    {
-        observers.add(observer);
-    }
-
-    @Override
-    public void notifyObservers(Event event)
-    {
-        for (Observer observer : observers)
-        {
-            observer.observe(event);
-        }
-    }
-
-    public final int getGamerPort() {
-        return port;
-    }
-
-    public final Gamer getGamer() {
-        return gamer;
-    }
-
-    public void shutdown() {
-        try {
-            listener.close();
-            listener = null;
-        } catch (IOException e) {
-            ;
-        }
-    }
-
-    @Override
-    public void run()
-    {
+    public void run() {
         boolean debug = false;
+        if (debug){
+            try {
+                Request request = new RequestFactory().create(gamer,
+                        "( UNITY MatchA xplayer ticTacToe 5000 5000 )");
+                System.out.println(request.process(System.currentTimeMillis()));
+                System.out.println(gamer.selectMove(5000));
+                System.out.println(gamer.getLegalMoves(""));
+
+            } catch (Exception e){
+                System.out.println(e);
+            }
+
+        } else {
+            System.out.println("run");
+            update.start();
             while (listener != null) {
                 try {
                     Socket connection = listener.accept();
@@ -103,7 +67,6 @@ public class GamePlayer extends Thread implements Subject
                         throw new IOException("Empty message received.");
                     }
 
-                    notifyObservers(new PlayerReceivedMessageEvent(in));
                     GamerLogger.log("GamePlayer", "[Received at " +
                                     System.currentTimeMillis() +
                                     "] " + in, GamerLogger.LOG_LEVEL_DATA_DUMP);
@@ -115,7 +78,6 @@ public class GamePlayer extends Thread implements Subject
                     System.out.println(gamer.getLegalMoves(""));
                     HttpWriter.writeAsServer(connection, out);
                     connection.close();
-                    notifyObservers(new PlayerSentMessageEvent(out));
                     GamerLogger.log("GamePlayer", "[Sent at " +
                                     System.currentTimeMillis() + "] " +
                                     out, GamerLogger.LOG_LEVEL_DATA_DUMP);
@@ -123,33 +85,14 @@ public class GamePlayer extends Thread implements Subject
                     GamerLogger.log("GamePlayer", "[Dropped data at " +
                                     System.currentTimeMillis() +
                                     "] Due to " + e, GamerLogger.LOG_LEVEL_DATA_DUMP);
-                    notifyObservers(new PlayerDroppedPacketEvent());
                 }
             }
+            try {
+                update.join();
+            } catch (InterruptedException e){
+                System.out.println(e);
+            } 
 
-        }
-
-    // Simple main function that starts a RandomGamer on a specified port.
-    // It might make sense to factor this out into a separate app sometime,
-    // so that the GamePlayer class doesn't have to import RandomGamer.
-    public static void main(String[] args)
-    {
-        if (args.length != 1) {
-            System.err.println("Usage: GamePlayer <port>");
-            System.exit(1);
-        }
-
-        try {
-            GamePlayer player = new GamePlayer(Integer.valueOf(args[0]), new RandomGamer());
-            player.run();
-        } catch (NumberFormatException e) {
-            System.err.println("Illegal port number: " + args[0]);
-            e.printStackTrace();
-            System.exit(2);
-        } catch (IOException e) {
-            System.err.println("IO Exception: " + e);
-            e.printStackTrace();
-            System.exit(3);
         }
     }
 }
