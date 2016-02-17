@@ -3,6 +3,9 @@ package org.ggp.base.player.gamer.statemachine.sample;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.ggp.base.player.gamer.exception.MetaGamingException;
+import org.ggp.base.util.gdl.grammar.GdlConstant;
+import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.apps.player.detail.DetailPanel;
 import org.ggp.base.apps.player.detail.SimpleDetailPanel;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
@@ -106,6 +109,37 @@ public class JeffGamer extends StateMachineGamer
         {
             GamerLogger.logStackTrace("GamePlayer", e);
             throw new MoveSelectionException(e);
+        }
+    }
+
+    @Override
+    public void metaGame(long timeout) throws MetaGamingException
+    {
+        try
+        {
+            stateMachine = getInitialStateMachine();
+            stateMachine.initialize(getMatch().getGame().getRules());
+            currentState = stateMachine.getInitialState();
+            String first = getRoleName().getValue();
+            List<Role> roles = stateMachine.getRoles();
+            if (first.equals("first")){
+                me = roles.get(1);
+                other = roles.get(0);
+            } else {
+                me = roles.get(0);
+                other = roles.get(1);
+            }
+            //This is fine.
+            other = (roles.get(0).equals(me)? roles.get(1) : roles.get(0));
+            getMatch().appendState(currentState.getContents());
+
+            stateMachineMetaGame(timeout);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            GamerLogger.logStackTrace("GamePlayer", e);
+            throw new MetaGamingException(e);
         }
     }
     /**

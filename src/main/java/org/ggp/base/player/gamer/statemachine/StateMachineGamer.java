@@ -182,7 +182,7 @@ public abstract class StateMachineGamer extends Gamer
      * then calls stateMachineMetaGame.
      */
     @Override
-    public final void metaGame(long timeout) throws MetaGamingException
+    public  void metaGame(long timeout) throws MetaGamingException
     {
         try
         {
