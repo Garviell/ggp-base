@@ -50,7 +50,6 @@ public final class UnityPlayer extends GamePlayer
                         "( UNITY MatchA xplayer ticTacToe 5000 5000 )");
                 System.out.println(request.process(System.currentTimeMillis()));
                 System.out.println(gamer.selectMove(5000));
-                System.out.println(gamer.getLegalMoves(""));
 
             } catch (Exception e){
                 System.out.println(e);
@@ -66,6 +65,7 @@ public final class UnityPlayer extends GamePlayer
                     if (in.length() == 0) {
                         throw new IOException("Empty message received.");
                     }
+                    System.out.println(in);
 
                     GamerLogger.log("GamePlayer", "[Received at " +
                                     System.currentTimeMillis() +
@@ -74,9 +74,10 @@ public final class UnityPlayer extends GamePlayer
                     Request request = new RequestFactory().create(gamer, in);
                     String out = request.process(System.currentTimeMillis());
 
-                    System.out.println(in);
-                    System.out.println(gamer.getLegalMoves(""));
+                    System.out.println(gamer.getLegalMoves('m'));
                     HttpWriter.writeAsServer(connection, out);
+                    System.out.println(out);
+
                     connection.close();
                     GamerLogger.log("GamePlayer", "[Sent at " +
                                     System.currentTimeMillis() + "] " +

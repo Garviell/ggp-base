@@ -11,6 +11,7 @@ import org.ggp.base.player.gamer.exception.AbortingException;
 import org.ggp.base.player.gamer.exception.GamePreviewException;
 import org.ggp.base.player.gamer.exception.MetaGamingException;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.game.Game;
@@ -100,9 +101,13 @@ public abstract class Gamer implements Subject
     public final void setRoleName(GdlConstant roleName) {
         this.roleName = roleName;
     }
-    public List<Move> getLegalMoves(String ss){
+    public List<Move> getLegalMoves(char ss) throws MoveDefinitionException{
         List<Move> dudu = new ArrayList<Move>();
         return dudu;
+    }
+
+    public String getEvaluation(){
+        return "";
     }
 
     // ==== Observer Stuff ====

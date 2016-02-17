@@ -1,6 +1,7 @@
 import random
 
 # from org.ggp.base.util.statemachine import MachineState
+from com.xhaus.jyson import JysonCodec as json
 from org.ggp.base.util.statemachine.implementation.prover import ProverStateMachine
 from org.ggp.base.util.statemachine.cache import CachedStateMachine
 from org.ggp.base.player.gamer.statemachine import StateMachineGamer
@@ -35,3 +36,10 @@ class Jeff(StateMachineGamer):
     def getLegalMoves(self, role):
         return self.getStateMachine().getLegalMoves(self.getCurrentState(),
                                                     self.getRole())
+
+    def getEvaluation(self):
+        du = json.dumps([(x, i) for x, i in enumerate(self.getStateMachine()
+                                                      .getLegalMoves(self.getCurrentState(),
+                                                                     self.getRole()))])
+        print(du)
+        return du

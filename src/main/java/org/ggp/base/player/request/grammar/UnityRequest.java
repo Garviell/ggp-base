@@ -1,9 +1,11 @@
 
 package org.ggp.base.player.request.grammar;
 
+import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.player.event.PlayerTimeEvent;
 import org.ggp.base.util.game.LocalGameRepository;
 import org.ggp.base.player.gamer.Gamer;
+import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.player.gamer.event.GamerNewMatchEvent;
 import org.ggp.base.player.gamer.event.GamerUnrecognizedMatchEvent;
 import org.ggp.base.player.gamer.exception.MetaGamingException;
@@ -17,7 +19,7 @@ import org.ggp.base.util.gdl.factory.GdlFactory;
 public final class UnityRequest extends Request
 {
     private Game game;
-    private final Gamer gamer;
+    private final StateMachineGamer gamer;
     private final String matchId;
     private final String gameName;
     private final int playClock;
@@ -25,7 +27,7 @@ public final class UnityRequest extends Request
     private final int startClock;
 
     public UnityRequest(Gamer gamer, GdlConstant roleName, String matchId, String gameName, int startClock, int playClock) {
-        this.gamer = gamer;
+        this.gamer = (StateMachineGamer)gamer;
         this.matchId = matchId;
         this.startClock = startClock;
         this.playClock = playClock;
@@ -45,7 +47,6 @@ public final class UnityRequest extends Request
         // ignore the message, saying that we're busy.
         if (gamer.getMatch() != null) {
             GamerLogger.logError("GamePlayer", "Got unity message while already busy playing a game: ignoring.");
-            gamer.notifyObservers(new GamerUnrecognizedMatchEvent(matchId));
             return "busy";
         }
 
@@ -56,14 +57,13 @@ public final class UnityRequest extends Request
         Match match = new Match(matchId, -1, startClock, playClock, game, null);
         gamer.setMatch(match);
         gamer.setRoleName(roleName);
-        gamer.notifyObservers(new GamerNewMatchEvent(match, roleName));
 
         // Finally, have the gamer begin metagaming.
         try {
-            gamer.notifyObservers(new PlayerTimeEvent(gamer.getMatch().getStartClock() * 1000));
             gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
         } catch (MetaGamingException e) {
             GamerLogger.logStackTrace("GamePlayer", e);
+            e.printStackTrace();
 
             // Upon encountering an uncaught exception during metagaming,
             // assume that indicates that we aren't actually able to play
@@ -73,7 +73,12 @@ public final class UnityRequest extends Request
             return "busy";
         }
 
-        return "ready";
+        try{
+            return "ready:" + gamer.getLegalMoves('o').toString() 
+                   + ":" +  gamer.getCurrentState().toString();
+        } catch (MoveDefinitionException e){
+           return "ERROR" + e ;
+        }
     }
 
     @Override

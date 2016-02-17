@@ -89,7 +89,15 @@ public abstract class StateMachineGamer extends Gamer
      */
     public final Role getRole()
     {
-        return role;
+        return me;
+    }
+
+    /**
+     * Returns the role that this gamer is playing as in the game.
+     */
+    public final Role getOtherRole()
+    {
+        return other;
     }
 
     /**
@@ -108,7 +116,7 @@ public abstract class StateMachineGamer extends Gamer
      * only used in the Proxy, for players designed to run 24/7.
      */
     protected final void cleanupAfterMatch() {
-        role = null;
+        me = null;
         currentState = null;
         stateMachine = null;
         setMatch(null);
@@ -140,7 +148,7 @@ public abstract class StateMachineGamer extends Gamer
             }
 
             // Finally, switch over if everything went well.
-            role = newRole;
+            me = newRole;
             currentState = newCurrentState;
             stateMachine = newStateMachine;
         } catch (Exception e) {
@@ -158,7 +166,7 @@ public abstract class StateMachineGamer extends Gamer
         stateMachine = getInitialStateMachine();
         stateMachine.initialize(getMatch().getGame().getRules());
         currentState = stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());
-        role = stateMachine.getRoleFromConstant(getRoleName());
+        me = stateMachine.getRoleFromConstant(getRoleName());
     }
 
     // =====================================================================
@@ -181,13 +189,17 @@ public abstract class StateMachineGamer extends Gamer
             stateMachine = getInitialStateMachine();
             stateMachine.initialize(getMatch().getGame().getRules());
             currentState = stateMachine.getInitialState();
-            role = stateMachine.getRoleFromConstant(getRoleName());
+            me = stateMachine.getRoleFromConstant(getRoleName());
+            //This is fine.
+            List<Role> roles = stateMachine.getRoles();
+            other = (roles.get(0).equals(me)? roles.get(1) : roles.get(0));
             getMatch().appendState(currentState.getContents());
 
             stateMachineMetaGame(timeout);
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             GamerLogger.logStackTrace("GamePlayer", e);
             throw new MetaGamingException(e);
         }
@@ -200,7 +212,7 @@ public abstract class StateMachineGamer extends Gamer
      * current state.
      */
     @Override
-    public final GdlTerm selectMove(long timeout) throws MoveSelectionException
+    public GdlTerm selectMove(long timeout) throws MoveSelectionException
     {
         try
         {
@@ -269,7 +281,8 @@ public abstract class StateMachineGamer extends Gamer
     }
 
     // Internal state about the current state of the state machine.
-    private Role role;
-    private MachineState currentState;
-    private StateMachine stateMachine;
+    protected Role me;
+    protected Role other;
+    protected MachineState currentState;
+    protected StateMachine stateMachine;
 }

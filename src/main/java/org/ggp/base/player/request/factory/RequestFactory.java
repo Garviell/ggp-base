@@ -8,6 +8,7 @@ import org.ggp.base.player.request.factory.exceptions.RequestFormatException;
 import org.ggp.base.player.request.grammar.AbortRequest;
 import org.ggp.base.player.request.grammar.InfoRequest;
 import org.ggp.base.player.request.grammar.PlayRequest;
+import org.ggp.base.player.request.grammar.UPlayRequest;
 import org.ggp.base.player.request.grammar.PreviewRequest;
 import org.ggp.base.player.request.grammar.UnityRequest;
 import org.ggp.base.player.request.grammar.Request;
@@ -44,6 +45,10 @@ public final class RequestFactory
             else if (type.equals("unity"))
             {
                 return createUnity(gamer, list);
+            }
+            else if (type.equals("uplay"))
+            {
+                return createUPlay(gamer, list);
             }
             else if (type.equals("stop"))
             {
@@ -86,6 +91,22 @@ public final class RequestFactory
         List<GdlTerm> moves = parseMoves(arg2);
 
         return new PlayRequest(gamer, matchId, moves);
+    }
+
+    private UPlayRequest createUPlay(Gamer gamer, SymbolList list) throws GdlFormatException
+    {
+        if (list.size() != 3)
+        {
+            throw new IllegalArgumentException("Expected exactly 2 arguments!");
+        }
+
+        SymbolAtom arg1 = (SymbolAtom) list.get(1);
+        Symbol arg2 = list.get(2);
+
+        String matchId = arg1.getValue();
+        List<GdlTerm> moves = parseMoves(arg2);
+
+        return new UPlayRequest(gamer, matchId, moves);
     }
 
     private UnityRequest createUnity(Gamer gamer, SymbolList list) throws GdlFormatException

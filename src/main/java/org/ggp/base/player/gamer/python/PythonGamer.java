@@ -142,14 +142,6 @@ public abstract class PythonGamer extends Gamer
     
 
     @Override
-    public List<Move> getLegalMoves(String ss) {
-        lazilyLoadGamerStub();
-        thePythonGamer.setMatch(getMatch());
-        thePythonGamer.setRoleName(getRoleName());
-        return thePythonGamer.getLegalMoves(ss);
-    }
-
-    @Override
     public final String getName() {
         return getPythonGamerName();
     }

@@ -24,7 +24,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    JeffGamerTest.class,
+    // JeffGamerTest.class,
     /* BaseCryptographyTest.class, */
     /* BaseHashingTest.class, */
     /* CanonicalJSONTest.class, */

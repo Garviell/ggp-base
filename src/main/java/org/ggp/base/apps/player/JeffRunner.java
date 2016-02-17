@@ -25,7 +25,7 @@ public final class JeffRunner
             return;
         }
         int port = Integer.parseInt(args[0]);
-        String name = "JeffPythonGamerStub";
+        String name = "JeffGamer";
         System.out.println("Starting up preconfigured player on port " +
                 port +
                 " using player class named " +

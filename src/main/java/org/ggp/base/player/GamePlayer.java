@@ -110,7 +110,7 @@ public class GamePlayer extends Thread implements Subject
                     String out = request.process(System.currentTimeMillis());
 
                     System.out.println(in);
-                    System.out.println(gamer.getLegalMoves(""));
+                    System.out.println(gamer.getLegalMoves('m'));
                     HttpWriter.writeAsServer(connection, out);
                     connection.close();
                     notifyObservers(new PlayerSentMessageEvent(out));

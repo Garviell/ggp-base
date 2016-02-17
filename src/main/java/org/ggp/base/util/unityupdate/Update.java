@@ -1,5 +1,6 @@
 package org.ggp.base.util.unityupdate;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -14,7 +15,7 @@ public final class Update extends Thread {
     private ServerSocket listener;
 
     public Update(int port, Gamer gamer) throws IOException{
-        System.out.println("Unity update constructor");
+        System.out.println("Unity update constructor on port: " + port);
         while(listener == null) {
             try {
                 listener = new ServerSocket(port, 0, InetAddress.getByName(null));
@@ -46,14 +47,16 @@ public final class Update extends Thread {
     public void run(){
         System.out.println("Starting up the update listener");
         try {
+            // if (in.length() == 0) {
+            //     throw new IOException("Empty message received.");
+            // }
             Socket connection = listener.accept();
             String in = HttpReader.readAsServer(connection);
-            if (in.length() == 0) {
-                throw new IOException("Empty message received.");
-            }
+            System.out.println(in);
+            PrintWriter pw = new PrintWriter(connection.getOutputStream(), true);
             while (listener != null) {
-                HttpWriter.writeAsServer(connection, "darude");
-                sleep(200);
+                pw.println(gamer.getEvaluation());
+                sleep(2000);
             }
             connection.close();
         } catch (Exception e) {
