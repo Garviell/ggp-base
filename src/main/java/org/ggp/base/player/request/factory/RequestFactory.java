@@ -95,6 +95,7 @@ public final class RequestFactory
 
     private UPlayRequest createUPlay(Gamer gamer, SymbolList list) throws GdlFormatException
     {
+        System.out.println(list);
         if (list.size() != 3)
         {
             throw new IllegalArgumentException("Expected exactly 2 arguments!");

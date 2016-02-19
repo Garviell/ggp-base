@@ -15,6 +15,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.player.gamer.exception.StoppingException;
 import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.game.Game;
+import org.ggp.base.util.statemachine.Role;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.match.Match;
@@ -101,7 +102,7 @@ public abstract class Gamer implements Subject
     public final void setRoleName(GdlConstant roleName) {
         this.roleName = roleName;
     }
-    public List<Move> getLegalMoves(char ss) throws MoveDefinitionException{
+    public List<Move> getLegalMoves(Role ss) throws MoveDefinitionException{
         List<Move> dudu = new ArrayList<Move>();
         return dudu;
     }

@@ -2,6 +2,7 @@ package org.ggp.base.player.gamer.statemachine.sample;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 import org.ggp.base.player.gamer.exception.MetaGamingException;
 import org.ggp.base.util.gdl.grammar.GdlConstant;
@@ -35,9 +36,11 @@ import org.ggp.base.player.gamer.exception.MoveSelectionException;
 
 public class JeffGamer extends StateMachineGamer
 {
+    private Map<Role, Integer> roleMap;
     @Override
     public void stateMachineMetaGame(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
     {
+        roleMap = getStateMachine().getRoleIndices();
         // Sample gamers do no metagaming at the beginning of the match.
     }
 
@@ -88,7 +91,6 @@ public class JeffGamer extends StateMachineGamer
         {
             stateMachine.doPerMoveWork();
 
-            System.out.println(currentState);
             List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
             if (lastMoves != null)
             {
@@ -101,9 +103,10 @@ public class JeffGamer extends StateMachineGamer
                 currentState = stateMachine.getNextState(currentState, moves);
                 getMatch().appendState(currentState.getContents());
             }
-            System.out.println(currentState);
-
-            return stateMachineSelectMove(timeout).getContents();
+            List<Move> move = stateMachineSelectMoves(timeout);
+            currentState = stateMachine.getNextState(currentState, move);
+            getMatch().appendState(currentState.getContents());
+            return move.get(roleMap.get(me)).getContents();
         }
         catch (Exception e)
         {
@@ -130,9 +133,7 @@ public class JeffGamer extends StateMachineGamer
                 other = roles.get(1);
             }
             //This is fine.
-            other = (roles.get(0).equals(me)? roles.get(1) : roles.get(0));
             getMatch().appendState(currentState.getContents());
-
             stateMachineMetaGame(timeout);
         }
         catch (Exception e)
@@ -145,17 +146,24 @@ public class JeffGamer extends StateMachineGamer
     /**
      * Employs a simple sample "Monte Carlo" algorithm.
      */
-    @Override
     public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException,
                                                             MoveDefinitionException,
                                                             GoalDefinitionException
+    { 
+        return null;
+    }
+    public List<Move> stateMachineSelectMoves(long timeout) throws TransitionDefinitionException,
+                                                            MoveDefinitionException,
+                                                            GoalDefinitionException
     {
+        System.out.println("Entered select moves");
         StateMachine theMachine = getStateMachine();
         long start = System.currentTimeMillis();
         long finishBy = timeout - 1000;
+        int me = roleMap.get(getRole());
 
-        List<Move> moves = theMachine.getLegalMoves(getCurrentState(), getRole());
-        Move selection = moves.get(0);
+        List<List<Move>> moves = theMachine.getLegalJointMoves(getCurrentState());
+        List<Move> selection = moves.get(0);
         if (moves.size() > 1) {
             int[] moveTotalPoints = new int[moves.size()];
             int[] moveTotalAttempts = new int[moves.size()];
@@ -166,7 +174,7 @@ public class JeffGamer extends StateMachineGamer
                 if (System.currentTimeMillis() > finishBy)
                     break;
 
-                int theScore = performDepthChargeFromMove(getCurrentState(), moves.get(i));
+                int theScore = performDepthChargeFromMove(getCurrentState(), moves.get(i).get(me));
                 moveTotalPoints[i] += theScore;
                 moveTotalAttempts[i] += 1;
             }
@@ -190,6 +198,7 @@ public class JeffGamer extends StateMachineGamer
         }
 
         long stop = System.currentTimeMillis();
+        System.out.println("Exited select moves");
 
         return selection;
     }
@@ -208,10 +217,10 @@ public class JeffGamer extends StateMachineGamer
     }
 
     @Override
-    public List<Move> getLegalMoves(char role) throws MoveDefinitionException{
-        if (role == 'm'){
+    public List<Move> getLegalMoves(Role role) throws MoveDefinitionException{
+        if (role.equals(getRole())){
             return getStateMachine().getLegalMoves(getCurrentState(), getRole());
-        } else if (role == 'o') {
+        } else if (role.equals(getOtherRole())) {
             return getStateMachine().getLegalMoves(getCurrentState(), getOtherRole());
         } else {
             return null;

@@ -56,7 +56,6 @@ public final class UnityPlayer extends GamePlayer
             }
 
         } else {
-            System.out.println("run");
             update.start();
             while (listener != null) {
                 try {
@@ -74,15 +73,15 @@ public final class UnityPlayer extends GamePlayer
                     Request request = new RequestFactory().create(gamer, in);
                     String out = request.process(System.currentTimeMillis());
 
-                    System.out.println(gamer.getLegalMoves('m'));
                     HttpWriter.writeAsServer(connection, out);
-                    System.out.println(out);
+                    System.out.println("Out string:\n" + out);
 
                     connection.close();
                     GamerLogger.log("GamePlayer", "[Sent at " +
                                     System.currentTimeMillis() + "] " +
                                     out, GamerLogger.LOG_LEVEL_DATA_DUMP);
                 } catch (Exception e) {
+                    System.out.println(e.toString());
                     GamerLogger.log("GamePlayer", "[Dropped data at " +
                                     System.currentTimeMillis() +
                                     "] Due to " + e, GamerLogger.LOG_LEVEL_DATA_DUMP);
