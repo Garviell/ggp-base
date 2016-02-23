@@ -8,7 +8,8 @@ import org.ggp.base.player.request.factory.exceptions.RequestFormatException;
 import org.ggp.base.player.request.grammar.AbortRequest;
 import org.ggp.base.player.request.grammar.InfoRequest;
 import org.ggp.base.player.request.grammar.PlayRequest;
-import org.ggp.base.player.request.grammar.UPlayRequest;
+import org.ggp.base.player.request.grammar.PushRequest;
+import org.ggp.base.player.request.grammar.PullRequest;
 import org.ggp.base.player.request.grammar.PreviewRequest;
 import org.ggp.base.player.request.grammar.UnityRequest;
 import org.ggp.base.player.request.grammar.Request;
@@ -46,9 +47,13 @@ public final class RequestFactory
             {
                 return createUnity(gamer, list);
             }
-            else if (type.equals("uplay"))
+            else if (type.equals("push"))
             {
-                return createUPlay(gamer, list);
+                return createPush(gamer, list);
+            }
+            else if (type.equals("pull"))
+            {
+                return createPull(gamer, list);
             }
             else if (type.equals("stop"))
             {
@@ -93,7 +98,7 @@ public final class RequestFactory
         return new PlayRequest(gamer, matchId, moves);
     }
 
-    private UPlayRequest createUPlay(Gamer gamer, SymbolList list) throws GdlFormatException
+    private PushRequest createPush(Gamer gamer, SymbolList list) throws GdlFormatException
     {
         System.out.println(list);
         if (list.size() != 3)
@@ -107,7 +112,22 @@ public final class RequestFactory
         String matchId = arg1.getValue();
         List<GdlTerm> moves = parseMoves(arg2);
 
-        return new UPlayRequest(gamer, matchId, moves);
+        return new PushRequest(gamer, matchId, moves);
+    }
+
+    private PullRequest createPull(Gamer gamer, SymbolList list) throws GdlFormatException
+    {
+        System.out.println(list);
+        if (list.size() != 2)
+        {
+            throw new IllegalArgumentException("Expected exactly 2 arguments!");
+        }
+
+        SymbolAtom arg1 = (SymbolAtom) list.get(1);
+
+        String matchId = arg1.getValue();
+
+        return new PullRequest(gamer, matchId);
     }
 
     private UnityRequest createUnity(Gamer gamer, SymbolList list) throws GdlFormatException

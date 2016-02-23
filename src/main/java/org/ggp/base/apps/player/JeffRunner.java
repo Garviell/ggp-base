@@ -25,7 +25,7 @@ public final class JeffRunner
             return;
         }
         int port = Integer.parseInt(args[0]);
-        String name = "JeffGamer";
+        String name = "UnityGamer";
         System.out.println("Starting up preconfigured player on port " +
                 port +
                 " using player class named " +
@@ -45,7 +45,6 @@ public final class JeffRunner
             return;
         }
         Gamer gamer = (Gamer) chosenGamerClass.newInstance();
-        System.out.println("JeffRunner");
         new UnityPlayer(port, gamer).start();
     }
 }

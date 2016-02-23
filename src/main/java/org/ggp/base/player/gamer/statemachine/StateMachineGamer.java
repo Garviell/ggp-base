@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.ggp.base.player.gamer.Gamer;
+import org.ggp.base.util.gdl.grammar.GdlConstant;
 import org.ggp.base.player.gamer.exception.AbortingException;
 import org.ggp.base.player.gamer.exception.MetaGamingException;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
@@ -79,8 +80,7 @@ public abstract class StateMachineGamer extends Gamer
     /**
      * Returns the current state of the game.
      */
-    public final MachineState getCurrentState()
-    {
+    public final MachineState getCurrentState() {
         return currentState;
     }
 
@@ -123,6 +123,11 @@ public abstract class StateMachineGamer extends Gamer
         setRoleName(null);
     }
 
+    @Override
+    public GdlConstant getRoleName(){
+        return roleName;
+        
+    }
     /**
      * Switches stateMachine to newStateMachine, playing through the match
      * history to the current state so that currentState is expressed using
@@ -192,7 +197,6 @@ public abstract class StateMachineGamer extends Gamer
             me = stateMachine.getRoleFromConstant(getRoleName());
             //This is fine.
             List<Role> roles = stateMachine.getRoles();
-            other = (roles.get(0).equals(me)? roles.get(1) : roles.get(0));
             getMatch().appendState(currentState.getContents());
 
             stateMachineMetaGame(timeout);

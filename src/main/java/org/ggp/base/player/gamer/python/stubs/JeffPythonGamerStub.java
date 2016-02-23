@@ -7,6 +7,6 @@ public final class JeffPythonGamerStub extends PythonGamer
     @Override
     protected String getPythonGamerModule() { return "EGGPAGamer.jeff"; }
     @Override
-    protected String getPythonGamerName() { return "Jeff"; }
+    protected String getPythonGamerName() { return "DeprecatedJeff"; }
 }
 

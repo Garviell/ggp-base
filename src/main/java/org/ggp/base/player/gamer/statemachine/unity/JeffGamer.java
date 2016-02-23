@@ -14,6 +14,7 @@ import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.util.game.Game;
 import org.ggp.base.util.logging.GamerLogger;
 import org.ggp.base.util.statemachine.Move;
+import org.ggp.base.player.gamer.statemachine.unity.MCTS.MCTS;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.StateMachine;
@@ -22,6 +23,7 @@ import org.ggp.base.util.statemachine.exceptions.GoalDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.util.statemachine.exceptions.TransitionDefinitionException;
 import org.ggp.base.util.statemachine.implementation.prover.ProverStateMachine;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
 
 /**
@@ -36,26 +38,31 @@ import org.ggp.base.player.gamer.exception.MoveSelectionException;
 
 public class JeffGamer extends StateMachineGamer
 {
+    private MCTS mcts;
     private Map<Role, Integer> roleMap;
+    public ReentrantReadWriteLock lock1= new ReentrantReadWriteLock(true);
     @Override
-    public void stateMachineMetaGame(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException
-    {
+    public void stateMachineMetaGame(long timeout) {
+
         roleMap = getStateMachine().getRoleIndices();
+        mcts = new MCTS(this, getRole(), lock1);
+        long finishBy = timeout - 1100;
+        mcts.start();
+        while(System.currentTimeMillis() < finishBy){
+            try{
+                Thread.sleep(200);
+            } catch(Exception e){}//don't care
+        }
+        // kCTS.blocked = true;
         // Sample gamers do no metagaming at the beginning of the match.
     }
 
 
-
-    /** This will currently return "SampleGamer"
-     * If you are working on : public abstract class MyGamer extends SampleGamer
-     * Then this function would return "MyGamer"
-     */
     @Override
     public String getName() {
-        return getClass().getSimpleName();
+        return "Jeff";
     }
-
-    // This is the default State Machine
+    // This is the default State Machine,
     @Override
     public StateMachine getInitialStateMachine() {
         return new CachedStateMachine(new ProverStateMachine());
@@ -67,10 +74,13 @@ public class JeffGamer extends StateMachineGamer
         return new SimpleDetailPanel();
     }
 
-
-
     @Override
     public void stateMachineStop() {
+        MCTS.alive = false;
+        try{
+            mcts.join();
+        } catch (Exception e){}
+        mcts = null;
         // Sample gamers do no special cleanup when the match ends normally.
     }
 
@@ -84,11 +94,47 @@ public class JeffGamer extends StateMachineGamer
         // Sample gamers do no game previewing.
     }
 
+    public GdlTerm uSelectMove(long timeout) throws MoveSelectionException {
+        try {
+            stateMachine.doPerMoveWork();
+
+            List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
+            if (lastMoves != null) {
+                List<Move> moves = new ArrayList<Move>();
+                for (GdlTerm sentence : lastMoves) {
+                    moves.add(stateMachine.getMoveFromTerm(sentence));
+                }
+
+                currentState = stateMachine.getNextState(currentState, moves);
+                getMatch().appendState(currentState.getContents());
+            }
+            List<Move> move;
+
+            while (true){
+                move = stateMachineSelectMoves(timeout);
+                currentState = stateMachine.getNextState(currentState, move);
+                getMatch().appendState(currentState.getContents());
+                List<Move> legal  = getStateMachine().getLegalMoves(getCurrentState(), getRole());
+                if (legal.size() == 1){
+                    if (!legal.get(0).toString().equals("noop")){ //no idea if this works to detect noop
+                        System.out.println("Noop detected in JeffGamer");
+                        break;
+                    }
+                }
+
+            }
+            return move.get(roleMap.get(me)).getContents();
+        } catch (Exception e) {
+            GamerLogger.logStackTrace("GamePlayer", e);
+            throw new MoveSelectionException(e);
+        }
+    }
+
     @Override
-    public GdlTerm selectMove(long timeout) throws MoveSelectionException
-    {
+    public GdlTerm selectMove(long timeout) throws MoveSelectionException {
         try
         {
+            lock1.writeLock().lock();
             stateMachine.doPerMoveWork();
 
             List<GdlTerm> lastMoves = getMatch().getMostRecentMoves();
@@ -101,39 +147,41 @@ public class JeffGamer extends StateMachineGamer
                 }
 
                 currentState = stateMachine.getNextState(currentState, moves);
+                mcts.newRoot = moves;
+
                 getMatch().appendState(currentState.getContents());
             }
-            List<Move> move = stateMachineSelectMoves(timeout);
-            currentState = stateMachine.getNextState(currentState, move);
-            getMatch().appendState(currentState.getContents());
-            return move.get(roleMap.get(me)).getContents();
+            Move move = stateMachineSelectMove(timeout);
+            System.out.println("Picking move; " + move.toString());
+
+            return move.getContents(); 
         }
         catch (Exception e)
         {
+            System.out.println(e.toString());
             GamerLogger.logStackTrace("GamePlayer", e);
             throw new MoveSelectionException(e);
         }
     }
 
+    private void advanceTree(List<Move> moves){
+        mcts.selectMove(moves);
+    }
+
     @Override
-    public void metaGame(long timeout) throws MetaGamingException
+    public  void metaGame(long timeout) throws MetaGamingException
     {
         try
         {
             stateMachine = getInitialStateMachine();
             stateMachine.initialize(getMatch().getGame().getRules());
             currentState = stateMachine.getInitialState();
-            String first = getRoleName().getValue();
-            List<Role> roles = stateMachine.getRoles();
-            if (first.equals("first")){
-                me = roles.get(1);
-                other = roles.get(0);
-            } else {
-                me = roles.get(0);
-                other = roles.get(1);
-            }
+            me = stateMachine.getRoleFromConstant(getRoleName());
             //This is fine.
+            List<Role> roles = stateMachine.getRoles();
+            other = (roles.get(0).equals(me)? roles.get(1) : roles.get(0));
             getMatch().appendState(currentState.getContents());
+
             stateMachineMetaGame(timeout);
         }
         catch (Exception e)
@@ -143,20 +191,11 @@ public class JeffGamer extends StateMachineGamer
             throw new MetaGamingException(e);
         }
     }
+
     /**
      * Employs a simple sample "Monte Carlo" algorithm.
      */
-    public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException,
-                                                            MoveDefinitionException,
-                                                            GoalDefinitionException
-    { 
-        return null;
-    }
-    public List<Move> stateMachineSelectMoves(long timeout) throws TransitionDefinitionException,
-                                                            MoveDefinitionException,
-                                                            GoalDefinitionException
-    {
-        System.out.println("Entered select moves");
+    public List<Move> stateMachineSelectMoves(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException {
         StateMachine theMachine = getStateMachine();
         long start = System.currentTimeMillis();
         long finishBy = timeout - 1000;
@@ -203,6 +242,14 @@ public class JeffGamer extends StateMachineGamer
         return selection;
     }
 
+    //wrapping this because we don't care about interrupted exception
+    private void sleep(int ms){
+        try{
+            Thread.sleep(ms);
+        } catch(Exception e){}//don't care
+
+    }
+
     private int[] depth = new int[1];
     int performDepthChargeFromMove(MachineState theState, Move myMove) {
         StateMachine theMachine = getStateMachine();
@@ -230,6 +277,22 @@ public class JeffGamer extends StateMachineGamer
     @Override
     public String getEvaluation(){
         return "";
+    }
+    public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException{
+
+        StateMachine theMachine = getStateMachine();
+        long start = System.currentTimeMillis();
+        long finishBy = timeout - 1000;
+        int me = roleMap.get(getRole());
+        lock1.writeLock().unlock();
+        while (System.currentTimeMillis() < finishBy){
+            sleep(50);
+        }
+        lock1.writeLock().lock();
+        List<Move> li = mcts.selectMove();
+        System.out.println(li.toString());
+        lock1.writeLock().unlock();
+        return li.get(roleMap.get(getRole()));
     }
 }
 

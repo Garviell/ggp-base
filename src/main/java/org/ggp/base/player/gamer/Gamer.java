@@ -33,7 +33,7 @@ import org.ggp.base.util.statemachine.Move;
 public abstract class Gamer implements Subject
 {
     private Match match;
-    private GdlConstant roleName;
+    protected GdlConstant roleName;
 
     public Gamer()
     {
@@ -95,7 +95,7 @@ public abstract class Gamer implements Subject
         this.match = match;
     }
 
-    public final GdlConstant getRoleName() {
+    public GdlConstant getRoleName() {
         return roleName;
     }
 

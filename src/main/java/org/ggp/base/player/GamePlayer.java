@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.ggp.base.player.request.factory.exceptions.RequestFormatException;
 import org.ggp.base.player.event.PlayerDroppedPacketEvent;
 import org.ggp.base.util.gdl.factory.GdlFactory;
 import org.ggp.base.player.event.PlayerReceivedMessageEvent;

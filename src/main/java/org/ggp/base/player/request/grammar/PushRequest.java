@@ -2,27 +2,30 @@ package org.ggp.base.player.request.grammar;
 
 import java.util.List;
 
+import org.ggp.base.player.gamer.statemachine.unity.UnityGamer;
 import org.ggp.base.player.event.PlayerTimeEvent;
 import org.ggp.base.player.gamer.Gamer;
-import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
 import org.ggp.base.player.gamer.event.GamerUnrecognizedMatchEvent;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
 import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
+import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.gdl.grammar.GdlTerm;
 import org.ggp.base.util.logging.GamerLogger;
 
 
-public final class UPlayRequest extends Request
+public final class PushRequest extends Request
 {
-    private final StateMachineGamer gamer;
+    private final UnityGamer gamer;
     private final String matchId;
     private final List<GdlTerm> moves;
 
-    public UPlayRequest(Gamer gamer, String matchId, List<GdlTerm> moves)
+    public PushRequest(Gamer gamer, String matchId, List<GdlTerm> moves)
     {
-        this.gamer = (StateMachineGamer) gamer;
+        this.gamer = (UnityGamer) gamer;
         this.matchId = matchId;
         this.moves = moves;
+        this.moves.add(((UnityGamer)gamer).roleMap.get(this.gamer.getRole()), Move.create("noop").getContents());
+
     }
 
     @Override
@@ -47,8 +50,8 @@ public final class UPlayRequest extends Request
         }
 
         try {
-            String move = gamer.selectMove(gamer.getMatch().getPlayClock()  + receptionTime).toString();
-            String bob =  move.toString() + ":" + gamer.getLegalMoves(gamer.getOtherRole()).toString() 
+            gamer.addMove();
+            String bob =  "nil" + ":" + gamer.getLegalMoves(gamer.getOtherRole()).toString() 
                    + ":" + gamer.getCurrentState().toString();
             System.out.println(bob);
             return bob;

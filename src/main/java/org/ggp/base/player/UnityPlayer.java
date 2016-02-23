@@ -34,7 +34,7 @@ import org.ggp.base.util.symbol.grammar.SymbolList;
 
 public final class UnityPlayer extends GamePlayer
 {
-    protected final Thread update;
+    protected final Thread update; //,
     public UnityPlayer(int port, Gamer gamer) throws IOException {
         super(port, gamer);
         this.update = new Update(9149, gamer);
