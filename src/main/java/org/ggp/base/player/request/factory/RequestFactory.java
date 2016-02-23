@@ -43,8 +43,7 @@ public final class RequestFactory
             {
                 return createStart(gamer, list);
             }
-            else if (type.equals("unity"))
-            {
+            else if (type.equals("unity")) {
                 return createUnity(gamer, list);
             }
             else if (type.equals("push"))

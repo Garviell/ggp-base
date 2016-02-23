@@ -34,6 +34,7 @@ public final class UnityRequest extends Request
         this.gameName = gameName;
         this.roleName = roleName;
         this.game = null;
+        System.out.println("Managed to make a UnityRequest");
     }
 
     @Override
@@ -57,10 +58,12 @@ public final class UnityRequest extends Request
         Match match = new Match(matchId, -1, startClock, playClock, game, null);
         gamer.setMatch(match);
         gamer.setRoleName(roleName);
+        System.out.println("managed to set gamer variables");
 
         // Finally, have the gamer begin metagaming.
         try {
             gamer.metaGame(gamer.getMatch().getStartClock() * 1000 + receptionTime);
+            System.out.println("Managed to start metagaming");
         } catch (MetaGamingException e) {
             GamerLogger.logStackTrace("GamePlayer", e);
             e.printStackTrace();
