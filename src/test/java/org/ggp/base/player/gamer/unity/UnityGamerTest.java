@@ -20,6 +20,7 @@ public class UnityGamerTest extends Assert {
     @Test
     public void testUnityGamer() {
         try {
+            //Testing the general setup of the gamer
             setUp("second");
             List<Move> uMoves = g.getLegalMoves(g.getRole());
             List<Move> oMoves = g.getLegalMoves(g.getOtherRole());
@@ -34,6 +35,7 @@ public class UnityGamerTest extends Assert {
     @Test
     public void testRoles() {
         try {
+            //Testing if the correct roles are being set.
             setUp("second");
             assertEquals(g.getRole(), new Role(GdlPool.getConstant("xplayer")));
             assertEquals(g.getOtherRole(), new Role(GdlPool.getConstant("oplayer")));
@@ -51,8 +53,19 @@ public class UnityGamerTest extends Assert {
         try {
             setUp("second");
             GdlTerm move = g.selectMove(1000);
+            List<Move> uMoves = g.getLegalMoves(g.getRole());
+            List<Move> oMoves = g.getLegalMoves(g.getOtherRole());
+            //Does select move return a move?
             assertTrue(move  != null);
+            //The move should not be a noop
             assertFalse(move.equals(Move.create("noop").getContents()));
+            //Test if the state has changed
+            assertEquals(uMoves.size(), 1);
+            assertEquals(oMoves.size(), 8);
+            for (Move m : oMoves){
+                //Make sure that the correct move was set
+                assertFalse(m.equals(new Move(move)));
+            }
             tearDown();
         } catch(Exception e) {
             e.printStackTrace();

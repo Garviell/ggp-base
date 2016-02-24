@@ -17,14 +17,14 @@ import java.util.List;
 
 
 public final class MCTS extends Thread {
+    private StateMachineGamer gamer;
+    private Map<Role, Integer> roleMap;
+    private List<Role> roles;
     boolean debug = false;
     public boolean silent;
     public MCMove root;
     public List<Move> newRoot;
     public static boolean alive;
-    private StateMachineGamer gamer;
-    private Map<Role, Integer> roleMap;
-    private List<Role> roles;
     public ReentrantReadWriteLock lock1;
 
     public MCTS(StateMachineGamer gamer, Role starts, ReentrantReadWriteLock lock1, boolean silent){
@@ -134,8 +134,6 @@ public final class MCTS extends Thread {
         }
         for (int i = 0; i < root.children.size(); i++){
             if (moves.get(0).equals(root.children.get(i).move.get(0)) && moves.get(1).equals(root.children.get(i).move.get(1))){
-                // System.out.println("---------------");
-                // System.out.println("FOUND Opponent picked: " + root.children.get(i));
                 root = root.children.get(i);
                 return;
             }

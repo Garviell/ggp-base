@@ -48,8 +48,6 @@ public class UnityGamer extends StateMachineGamer
         mcts = new MCTS(this, getRole(), lock1, silent);
         long finishBy = timeout - 1000;
         mcts.start();
-        // kCTS.blocked = true;
-        // Sample gamers do no metagaming at the beginning of the match.
     }
 
     @Override
@@ -156,11 +154,11 @@ public class UnityGamer extends StateMachineGamer
             if(stateMachine.isTerminal(currentState)){
                 int p = stateMachine.getGoal(currentState, getOtherRole());
                 if (p == 100){
-                    return Move.create("won").getContents();
+                    return Move.create(move.toString() + ":won").getContents();
                 } else if (p > 1){
-                    return Move.create("draw").getContents();
+                    return Move.create(move.toString() + ":draw").getContents();
                 } else {
-                    return Move.create("lost").getContents();
+                    return Move.create(move.toString() + ":lost").getContents();
                 }
             }
         lock1.writeLock().unlock();
