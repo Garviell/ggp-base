@@ -108,7 +108,7 @@ public class UnityGamer extends StateMachineGamer
     }
 
 
-    public void addMove(){
+    public GdlTerm addMove(){
         lock1.writeLock().lock();
         stateMachine.doPerMoveWork();
         try{
@@ -121,13 +121,23 @@ public class UnityGamer extends StateMachineGamer
 
                 currentState = stateMachine.getNextState(currentState, moves);
                 mcts.newRoot = moves;
-
                 getMatch().appendState(currentState.getContents());
+                if(stateMachine.isTerminal(currentState)){
+                    int p = stateMachine.getGoal(currentState, getOtherRole());
+                    if (p == 100){
+                        return Move.create("won").getContents();
+                    } else if (p == 50){
+                        return Move.create("draw").getContents();
+                    } else {
+                        return Move.create("lost").getContents();
+                    }
+                }
             }
         } catch (Exception e){
             e.printStackTrace();
         }
         lock1.writeLock().unlock();
+        return null;
     }
 
 
@@ -143,6 +153,16 @@ public class UnityGamer extends StateMachineGamer
             mcts.newRoot = move;
 
             getMatch().appendState(currentState.getContents());
+            if(stateMachine.isTerminal(currentState)){
+                int p = stateMachine.getGoal(currentState, getOtherRole());
+                if (p == 100){
+                    return Move.create("won").getContents();
+                } else if (p == 50){
+                    return Move.create("draw").getContents();
+                } else {
+                    return Move.create("lost").getContents();
+                }
+            }
         lock1.writeLock().unlock();
             return move.get(roleMap.get(getRole())).getContents(); 
         }
