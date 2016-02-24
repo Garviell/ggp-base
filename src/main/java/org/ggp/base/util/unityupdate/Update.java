@@ -45,7 +45,7 @@ public final class Update extends Thread {
 
     @Override
     public void run(){
-        System.out.println("Starting up the update listener");
+        System.out.println("Update Listener ready to recieve connections");
         try {
             // if (in.length() == 0) {
             //     throw new IOException("Empty message received.");

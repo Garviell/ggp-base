@@ -18,6 +18,7 @@ import java.util.List;
 
 public final class MCTS extends Thread {
     boolean debug = false;
+    public boolean silent;
     public MCMove root;
     public List<Move> newRoot;
     public static boolean alive;
@@ -25,9 +26,9 @@ public final class MCTS extends Thread {
     private Map<Role, Integer> roleMap;
     private List<Role> roles;
     public ReentrantReadWriteLock lock1;
-    
 
-    public MCTS(StateMachineGamer gamer, Role starts, ReentrantReadWriteLock lock1){
+    public MCTS(StateMachineGamer gamer, Role starts, ReentrantReadWriteLock lock1, boolean silent){
+        this.silent = silent;
         this.gamer = gamer;
         root = new MCMove(null);
         newRoot = null;
@@ -85,7 +86,7 @@ public final class MCTS extends Thread {
         } else {
             child = node.select();
             result = search(child, machine,  state);
-        } 
+        }
         node.update(result);
         return result;
     }
@@ -93,7 +94,7 @@ public final class MCTS extends Thread {
     private List<Integer> playOut(MachineState theState, StateMachine machine, Role role) {
         try {
             //I can't think of a reason to keep the depth at the moment.
-            MachineState finalState = machine.performDepthCharge(theState, new int[1]); 
+            MachineState finalState = machine.performDepthCharge(theState, new int[1]);
             // System.out.println("Getting a goal value from playout");
             return machine.getGoals(finalState);
         } catch (Exception e) {
@@ -107,26 +108,30 @@ public final class MCTS extends Thread {
         int index = 0;
         List<Move> bestMove = null;
         int i;
-        System.out.println("================Available moves================");
+        if (!silent){
+            System.out.println("================Available moves================");
+        }
         for (i = 0; i < root.children.size(); i++){
 
-            System.out.println(root.children.get(i));
+            if (!silent){
+                System.out.println(root.children.get(i));
+            }
             if (root.children.get(i).n() > best){
                 best = root.children.get(i).n();
                 bestMove = root.children.get(i).move;
                 index = i;
             }
         }
-        System.out.println("Selecting: " + bestMove + " With " + best + " simulations");
+        if (!silent){
+            System.out.println("Selecting: " + bestMove + " With " + best + " simulations");
+        }
         return bestMove;
-    
     }
 
     public void selectMove(List<Move> moves)  {
-        System.out.println("Opponent picked !: " + moves.toString());
-        // System.out.println("searching in : " + root.children.toString());
-
-        
+        if (!silent){
+            System.out.println("Opponent picked !: " + moves.toString());
+        }
         for (int i = 0; i < root.children.size(); i++){
             if (moves.get(0).equals(root.children.get(i).move.get(0)) && moves.get(1).equals(root.children.get(i).move.get(1))){
                 // System.out.println("---------------");
@@ -151,19 +156,18 @@ public final class MCTS extends Thread {
         } else {
             return roles.get(0);
         }
-        
     }
 
     public void printTree(){
         printTree("", root);
-    } 
+    }
 
     public void printTree(String indent, MCMove node){
         System.out.println(indent + node);
         for (MCMove move : node.children){
             printTree(indent + "    ", move);
         }
-    } 
+    }
 
 
     public void shutdown(){

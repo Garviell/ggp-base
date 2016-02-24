@@ -4,6 +4,7 @@ import org.ggp.base.apps.logging.LogSummarizerTest;
 import org.ggp.base.apps.tiltyard.TiltyardRequestFarmTest;
 import org.ggp.base.player.gamer.clojure.ClojureGamerTest;
 import org.ggp.base.player.gamer.python.PythonGamerTest;
+import org.ggp.base.player.gamer.unity.UnityGamerTest;
 import org.ggp.base.player.gamer.python.JeffGamerTest;
 import org.ggp.base.util.crypto.BaseCryptographyTest;
 import org.ggp.base.util.crypto.BaseHashingTest;
@@ -24,7 +25,6 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    // JeffGamerTest.class,
     /* BaseCryptographyTest.class, */
     /* BaseHashingTest.class, */
     /* CanonicalJSONTest.class, */
@@ -37,9 +37,10 @@ import org.junit.runners.Suite;
     /* HttpTest.class, */
     /* InfoResponseTest.class, */
     /* LogSummarizerTest.class, */
-    /* NoTabsInRulesheetsTest.class, */
+    // NoTabsInRulesheetsTest.class,
     /* ProverStateMachineTest.class, */
-    /* PythonGamerTest.class, */
+       UnityGamerTest.class,
+    // PythonGamerTest.class,
     /* SignableJSONTest.class, */
     /* SimpleSentenceFormTest.class, */
     /* StaticValidationTest.class, */

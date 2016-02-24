@@ -38,6 +38,7 @@ public final class UnityPlayer extends GamePlayer
     public UnityPlayer(int port, Gamer gamer) throws IOException {
         super(port, gamer);
         this.update = new Update(9149, gamer);
+        System.out.println("UnityPlayer ready to start metagaming");
     }
 
 
@@ -91,7 +92,7 @@ public final class UnityPlayer extends GamePlayer
                 update.join();
             } catch (InterruptedException e){
                 System.out.println(e);
-            } 
+            }
 
         }
     }

@@ -39,12 +39,13 @@ import org.ggp.base.player.gamer.exception.MoveSelectionException;
 public class UnityGamer extends StateMachineGamer
 {
     private MCTS mcts;
+    public boolean silent = false;
     public Map<Role, Integer> roleMap;
     public ReentrantReadWriteLock lock1= new ReentrantReadWriteLock(true);
     @Override
     public void stateMachineMetaGame(long timeout) {
         roleMap = getStateMachine().getRoleIndices();
-        mcts = new MCTS(this, getRole(), lock1);
+        mcts = new MCTS(this, getRole(), lock1, silent);
         long finishBy = timeout - 1000;
         mcts.start();
         // kCTS.blocked = true;
@@ -57,11 +58,9 @@ public class UnityGamer extends StateMachineGamer
         List<Role> roles = stateMachine.getRoles();
         if (first.equals("first")){
             other = roles.get(0);
-            System.out.println("Sets roles");
             return roles.get(1).getName();
         } else {
             other = roles.get(1);
-            System.out.println("Sets roles");
             return roles.get(0).getName();
         }
     }
@@ -134,13 +133,17 @@ public class UnityGamer extends StateMachineGamer
 
     @Override
     public GdlTerm selectMove(long timeout) throws MoveSelectionException {
+        lock1.writeLock().lock();
         try {
             List<Move> move = stateMachineSelectMoves(timeout);
-            System.out.println("Picking move; " + move.toString());
+            if (!silent){
+                System.out.println("Picking move; " + move.toString());
+            }
             currentState = stateMachine.getNextState(currentState, move);
             mcts.newRoot = move;
 
             getMatch().appendState(currentState.getContents());
+        lock1.writeLock().unlock();
             return move.get(roleMap.get(getRole())).getContents(); 
         }
         catch (Exception e) {
@@ -157,19 +160,6 @@ public class UnityGamer extends StateMachineGamer
             Thread.sleep(ms);
         } catch(Exception e){}//don't care
 
-    }
-
-    private int[] depth = new int[1];
-    int performDepthChargeFromMove(MachineState theState, Move myMove) {
-        StateMachine theMachine = getStateMachine();
-        try {
-            MachineState randomState = theMachine.getRandomNextState(theState, getRole(), myMove);
-            MachineState finalState = theMachine.performDepthCharge(randomState, depth);
-            return theMachine.getGoal(finalState, getRole());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
     }
 
     @Override
