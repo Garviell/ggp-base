@@ -47,11 +47,6 @@ public class UnityGamer extends StateMachineGamer
         mcts = new MCTS(this, getRole(), lock1);
         long finishBy = timeout - 1000;
         mcts.start();
-        while(System.currentTimeMillis() < finishBy){
-            try{
-                Thread.sleep(50);
-            } catch(Exception e){}//don't care
-        }
         // kCTS.blocked = true;
         // Sample gamers do no metagaming at the beginning of the match.
     }
@@ -62,9 +57,11 @@ public class UnityGamer extends StateMachineGamer
         List<Role> roles = stateMachine.getRoles();
         if (first.equals("first")){
             other = roles.get(0);
+            System.out.println("Sets roles");
             return roles.get(1).getName();
         } else {
             other = roles.get(1);
+            System.out.println("Sets roles");
             return roles.get(0).getName();
         }
     }

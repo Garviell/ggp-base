@@ -25,6 +25,7 @@ public final class PushRequest extends Request
         this.matchId = matchId;
         this.moves = moves;
         this.moves.add(((UnityGamer)gamer).roleMap.get(this.gamer.getRole()), Move.create("noop").getContents());
+        System.out.println("Managed to create push request");
 
     }
 
