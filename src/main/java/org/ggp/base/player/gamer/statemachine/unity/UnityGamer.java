@@ -126,7 +126,7 @@ public class UnityGamer extends StateMachineGamer
                     int p = stateMachine.getGoal(currentState, getOtherRole());
                     if (p == 100){
                         return Move.create("won").getContents();
-                    } else if (p == 50){
+                    } else if (p > 1){
                         return Move.create("draw").getContents();
                     } else {
                         return Move.create("lost").getContents();
@@ -157,7 +157,7 @@ public class UnityGamer extends StateMachineGamer
                 int p = stateMachine.getGoal(currentState, getOtherRole());
                 if (p == 100){
                     return Move.create("won").getContents();
-                } else if (p == 50){
+                } else if (p > 1){
                     return Move.create("draw").getContents();
                 } else {
                     return Move.create("lost").getContents();
