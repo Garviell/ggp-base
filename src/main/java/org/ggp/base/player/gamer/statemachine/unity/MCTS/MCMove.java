@@ -145,6 +145,9 @@ public class MCMove {
 
 
 
+    /**
+     * Resets N to 0;
+     */
     public static void reset(){
         N = 0;
     }
@@ -154,14 +157,12 @@ public class MCMove {
         String result = "( ";
         result +=  "Move: " + ((move != null)? move.toString() : null) + " ";
         if(n > 0){
-            result += "N: " + N + " ";
-            result += "n: " + this.n + " ";
-            result += "size: " + this.size + " ";
-            result += "wins[ "  +  wins[0] + " " + wins[1] + " ] ";
+            result += String.format("| N: %d | n:%10d | size:%10d | ", N, n, size);
+            result += String.format("value: ( %5.1f , %5.1f ) | "  , calcValue(0), calcValue(1));
+            result += String.format("wins: [ %5d , %5d ] ", wins[0], wins[1]);
         } else {
             result += "<LEAF> ";
         }
-        result += "value: (" +calcValue(0) + " " + calcValue(1) + " )";
         return  result;
     }
 }

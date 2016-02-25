@@ -182,7 +182,7 @@ public final class MCTS extends Thread {
         long best = 0;
         List<Move> bestMove = null;
         if (!silent){
-            System.out.println("================Available moves================");
+            System.out.println("================================Available moves================================");
         }
         for (int i = 0; i < root.children.size(); i++){
             if (!silent){
