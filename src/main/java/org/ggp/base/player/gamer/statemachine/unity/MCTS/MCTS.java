@@ -9,6 +9,10 @@ import org.ggp.base.util.statemachine.Move;
 import org.ggp.base.util.statemachine.StateMachine;
 import org.ggp.base.util.statemachine.MachineState;
 import org.ggp.base.util.statemachine.Role;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 
 import java.util.Map;
@@ -16,58 +20,80 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/*
+ * A simple MCTS Thread that defines a Monte carlo search algorithm for
+ * a tree made up of MCMove nodes.
+ */ 
 public final class MCTS extends Thread {
-    private StateMachineGamer gamer;
-    private Map<Role, Integer> roleMap;
-    private List<Role> roles;
-    boolean debug = false;
+    private static final int threads = 4;
+    private ExecutorService executor;
+    private ReentrantReadWriteLock lock;
+    private static boolean alive;
+    protected StateMachineGamer gamer;
+    protected StateMachine machine;
+    protected MCMove root;
     public boolean silent;
-    public MCMove root;
     public List<Move> newRoot;
-    public static boolean alive;
-    public ReentrantReadWriteLock lock1;
+    boolean debug = false;
 
-    public MCTS(StateMachineGamer gamer, Role starts, ReentrantReadWriteLock lock1, boolean silent){
+/**
+ * Simple constructor
+ *
+ *
+ * @param gamer The gamer using this search
+ * @param lock A lock just to be safe
+ * @param silent Set to false to make it silent
+ */
+    public MCTS(StateMachineGamer gamer, ReentrantReadWriteLock lock, boolean silent){
         this.silent = silent;
         this.gamer = gamer;
+        machine = gamer.getStateMachine();
         root = new MCMove(null);
         newRoot = null;
         alive = true;
-        roles = gamer.getStateMachine().getRoles();
-        this.lock1 = lock1;
+        this.lock = lock;
+        executor  = Executors.newFixedThreadPool(threads);
     }
 
     @Override
     public void run(){
-        Role role = gamer.getRole();
+        //While we are alive we keep on searching
         while(alive){
-            StateMachine machine = gamer.getStateMachine();
             try {
-                lock1.writeLock().lock();
+                lock.writeLock().lock(); //Making sure the statemachine and tree are in sync
                 if (newRoot != null){
-                    selectMove(newRoot);
+                    applyMove(newRoot); //Move to our new root
                     newRoot = null;
                     if (debug){
-                        printTree();
+                        printTree(); //Print our new tree
                     }
                 }
-                search(root, machine, gamer.getCurrentState());
-                lock1.writeLock().unlock();
+                search(root, gamer.getCurrentState());
+                lock.writeLock().unlock();
             } catch (Exception e){
                 System.out.println("EXCEPTION: " + e.toString());
                 e.printStackTrace();
                 alive = false;
             }
         }
-        MCMove.reset();
+        MCMove.reset(); //Reset N
     }
 
-    private List<Integer> search(MCMove node, StateMachine machine, MachineState state) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException{
+    /**
+     * A recursive MCTS search function that searches through MCM nodes.
+     * It only expands one node each run when it hits a new leaf.
+     * 
+     * @param node The node we are searching
+     * @param state The current state entering this node
+     *
+     * @return The simulated value of this node for each player from one simulation.
+     */
+    private List<Integer> search(MCMove node, MachineState state) throws MoveDefinitionException, TransitionDefinitionException, GoalDefinitionException{
         List<Integer> result;
-        MCMove child;
-        if(!node.equals(root)){
-            if(node.n() == 0){
-                state = nextState(machine, state, node);
+        int expanded = 0; //We use this to increment size only when a node is added
+        if(!node.equals(root)){ //If we aren't at the root we change states
+            if(node.n() == 0){ //We only ever use the SM once for each state
+                state = machine.getNextState(state, node.move); 
                 node.state = state;
             } else {
                 state = node.state;
@@ -75,51 +101,96 @@ public final class MCTS extends Thread {
         }
         if(node.terminal || machine.isTerminal(state)){
             if(node.goals == null){
-                node.goals = machine.getGoals(state);
+                node.goals = machine.getGoals(state); //Decreasing terminal calls
                 node.terminal = true;
             }
             result = node.goals;
         } else if (node.n() == 0){
-            Role inControl = getControl(machine, state);
             node.expand(machine.getLegalJointMoves(state));
-            result = playOut(state, machine, inControl);
+            expanded = node.children.size(); //We have added nodes to the tree
+            result = playOut(state); //We do one playout
         } else {
-            child = node.select();
-            result = search(child, machine,  state);
+            MCMove child = node.select();
+            /* This is ugly but its more efficient than checking them all each time */
+            int prev = child.size();
+            result = search(child, state);
+            node.size(child.size(), prev);
         }
-        node.update(result);
+        node.update(result, expanded);
         return result;
     }
 
-    private List<Integer> playOut(MachineState theState, StateMachine machine, Role role) {
+    /**
+     * Performs one depthcharge down to a terminal state
+     *
+     * @param state The state we start our charge from
+     *
+     * @return The results of the depth charge for each player
+     */
+    private List<Integer> playOut(MachineState state) {
+        List<Future<List<Integer>>> list = new ArrayList<Future<List<Integer>>>();
+        for (int i = 0; i < threads; i++){
+            Callable<List<Integer>> worker = new Play(state, machine);
+            Future<List<Integer>> future = executor.submit(worker);
+            list.add(future);
+        }
+        int sum[] = new int[] {0,0};
         try {
-            //I can't think of a reason to keep the depth at the moment.
-            MachineState finalState = machine.performDepthCharge(theState, new int[1]);
-            // System.out.println("Getting a goal value from playout");
-            return machine.getGoals(finalState);
+            for (Future<List<Integer>> f : list){
+                sum[0] += f.get().get(0);
+                sum[1] += f.get().get(1);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+        List<Integer> res =  new ArrayList<Integer>();
+        res.add(sum[0]);
+        res.add(sum[1]);
+        return res;
     }
 
+    public static class Play implements Callable<List<Integer>>{
+        private MachineState state;
+        private final StateMachine machine;
+        public List<Integer> goals;
+
+        Play(MachineState state, StateMachine machine){
+            this.state = state;
+            this.machine = machine;
+        }
+
+        @Override
+        public List<Integer> call(){
+            try {
+                state = machine.performDepthCharge(state, new int[1]);
+                return machine.getGoals(state);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+        
+    }
+
+
+    /**
+     * @return The best move at this point
+     */
     public List<Move> selectMove() throws MoveDefinitionException {
         long best = 0;
-        int index = 0;
         List<Move> bestMove = null;
-        int i;
         if (!silent){
             System.out.println("================Available moves================");
         }
-        for (i = 0; i < root.children.size(); i++){
-
+        for (int i = 0; i < root.children.size(); i++){
             if (!silent){
                 System.out.println(root.children.get(i));
             }
             if (root.children.get(i).n() > best){
                 best = root.children.get(i).n();
                 bestMove = root.children.get(i).move;
-                index = i;
             }
         }
         if (!silent){
@@ -128,46 +199,53 @@ public final class MCTS extends Thread {
         return bestMove;
     }
 
-    public void selectMove(List<Move> moves)  {
+    /**
+     * Updates the root node to the given moves
+     *
+     * @param moves The moves that need to be made
+     */
+    public void applyMove(List<Move> moves)  {
         if (!silent){
-            System.out.println("Opponent picked !: " + moves.toString());
+            System.out.println("The applied move !: " + moves.toString());
         }
         for (int i = 0; i < root.children.size(); i++){
-            if (moves.get(0).equals(root.children.get(i).move.get(0)) && moves.get(1).equals(root.children.get(i).move.get(1))){
+            if (moves.get(0).equals(root.children.get(i).move.get(0)) &&
+                moves.get(1).equals(root.children.get(i).move.get(1))){
+
                 root = root.children.get(i);
+                MCMove.N = root.n();
                 return;
             }
         }
-            System.out.println("WAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAT");
+        throw new IllegalStateException("A move was selected that was not one of the root node moves");
     }
 
 
-    //TODO: Move all these exceptions around so that they just break things when they get thrown
-    private MachineState nextState(StateMachine machine, MachineState state,MCMove node) throws MoveDefinitionException, TransitionDefinitionException{
-        return machine.getNextState(state, node.move);
-    }
-
-    private Role getControl(StateMachine machine, MachineState state) throws MoveDefinitionException{
-        List<Move> move = machine.getLegalJointMoves(state).get(0);
-        if(move.get(0).equals(Move.create("noop"))){
-            return roles.get(1);
-        } else {
-            return roles.get(0);
-        }
-    }
-
-    public void printTree(){
-        printTree("", root);
-    }
-
-    public void printTree(String indent, MCMove node){
+    private void printTree(String indent, MCMove node){
         System.out.println(indent + node);
         for (MCMove move : node.children){
             printTree(indent + "    ", move);
         }
     }
 
+    /**
+     * Pretty prints the tree
+     */
+    public void printTree(){
+        printTree("", root);
+    }
 
+    /**
+     * @return the size of the tree
+     */
+    public long size(){
+        return root.size();
+    }
+
+
+    /**
+     * Breaks the searcher out of his loop
+     */
     public void shutdown(){
         alive = false;
     }

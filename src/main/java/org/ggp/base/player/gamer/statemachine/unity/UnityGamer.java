@@ -27,13 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
 
 /**
- * SampleGamer is a simplified version of the StateMachineGamer, dropping some
- * advanced functionality so the example gamers can be presented concisely.
- * This class implements 7 of the 8 core functions that need to be implemented
- * for any gamer.
- *
- * If you want to quickly create a gamer of your own, extend this class and
- * add the last core function : public Move stateMachineSelectMove(long timeout)
+ * UnityGamer is a special snowflake that does not work with anything in the base
  */
 
 public class UnityGamer extends StateMachineGamer
@@ -45,7 +39,7 @@ public class UnityGamer extends StateMachineGamer
     @Override
     public void stateMachineMetaGame(long timeout) {
         roleMap = getStateMachine().getRoleIndices();
-        mcts = new MCTS(this, getRole(), lock1, silent);
+        mcts = new MCTS(this, lock1, silent);
         long finishBy = timeout - 1000;
         mcts.start();
     }
@@ -83,6 +77,9 @@ public class UnityGamer extends StateMachineGamer
     @Override
     public void stateMachineStop() {
         mcts.shutdown();
+        if(!silent){
+            System.out.println("Shutting down vie Stop");
+        }
         try{
             mcts.join();
         } catch (Exception e){}
@@ -93,6 +90,9 @@ public class UnityGamer extends StateMachineGamer
     @Override
     public void stateMachineAbort() {
         mcts.shutdown();
+        if(!silent){
+            System.out.println("Shutting down vie Abort");
+        }
         try{
             mcts.join();
         } catch (Exception e){}
