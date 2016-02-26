@@ -5,7 +5,7 @@ import org.ggp.base.util.statemachine.exceptions.MoveDefinitionException;
 import org.ggp.base.player.event.PlayerTimeEvent;
 import org.ggp.base.util.game.LocalGameRepository;
 import org.ggp.base.player.gamer.Gamer;
-import org.ggp.base.player.gamer.statemachine.StateMachineGamer;
+import org.ggp.base.player.gamer.statemachine.unity.UnityGamer;
 import org.ggp.base.player.gamer.event.GamerNewMatchEvent;
 import org.ggp.base.player.gamer.event.GamerUnrecognizedMatchEvent;
 import org.ggp.base.player.gamer.exception.MetaGamingException;
@@ -19,7 +19,7 @@ import org.ggp.base.util.gdl.factory.GdlFactory;
 public final class UnityRequest extends Request
 {
     private Game game;
-    private final StateMachineGamer gamer;
+    private final UnityGamer gamer;
     private final String matchId;
     private final String gameName;
     private final int playClock;
@@ -27,7 +27,7 @@ public final class UnityRequest extends Request
     private final int startClock;
 
     public UnityRequest(Gamer gamer, GdlConstant roleName, String matchId, String gameName, int startClock, int playClock) {
-        this.gamer = (StateMachineGamer)gamer;
+        this.gamer = (UnityGamer) gamer;
         this.matchId = matchId;
         this.startClock = startClock;
         this.playClock = playClock;

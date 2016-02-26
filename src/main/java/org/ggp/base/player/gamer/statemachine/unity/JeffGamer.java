@@ -33,6 +33,7 @@ import org.ggp.base.player.gamer.exception.MoveSelectionException;
 public class JeffGamer extends StateMachineGamer
 {
     private MCTS mcts;
+    private Role other;
     private Map<Role, Integer> roleMap;
     public ReentrantReadWriteLock lock1= new ReentrantReadWriteLock(true);
     @Override
@@ -130,8 +131,14 @@ public class JeffGamer extends StateMachineGamer
 
     }
 
+    /**
+     * Returns the role that this gamer is playing as in the game.
+     */
+    public final Role getOtherRole() {
+        return other;
+    }
 
-    @Override
+
     public List<Move> getLegalMoves(Role role) throws MoveDefinitionException{
         if (role.equals(getRole())){
             return getStateMachine().getLegalMoves(getCurrentState(), getRole());
@@ -142,7 +149,6 @@ public class JeffGamer extends StateMachineGamer
         }
     }
 
-    @Override
     public String getEvaluation(){
         return "";
     }

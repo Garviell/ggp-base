@@ -27,12 +27,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.ggp.base.player.gamer.exception.MoveSelectionException;
 
 /**
- * UnityGamer is a special snowflake that does not work with anything in the base
+ * UnityGamer is a special snowflake that does not work with a normal GGP server or the kiosk 
  */
 
 public class UnityGamer extends StateMachineGamer
 {
-    private MCTS mcts;
+    protected MCTS mcts;
+    private Role other;
     public boolean silent = false;
     public Map<Role, Integer> roleMap;
     public ReentrantReadWriteLock lock1= new ReentrantReadWriteLock(true);
@@ -106,6 +107,11 @@ public class UnityGamer extends StateMachineGamer
     }
 
 
+    /**
+     * Applies the move recieved through a push request
+     *
+     * @return Null for non terminal states and won/draw/lost (applying to the other player) for terminals
+     */
     public GdlTerm addMove(){
         lock1.writeLock().lock();
         stateMachine.doPerMoveWork();
@@ -138,8 +144,10 @@ public class UnityGamer extends StateMachineGamer
         return null;
     }
 
-
     @Override
+    /**
+     * @return The selected move + ""/Goal
+     */
     public GdlTerm selectMove(long timeout) throws MoveSelectionException {
         lock1.writeLock().lock();
         try {
@@ -171,16 +179,10 @@ public class UnityGamer extends StateMachineGamer
         }
     }
 
-
-    //wrapping this because we don't care about interrupted exception
-    private void sleep(int ms){
-        try{
-            Thread.sleep(ms);
-        } catch(Exception e){}//don't care
-
-    }
-
-    @Override
+    /**
+     * @param role The role you want the moves for 
+     * @return Legal moves for the given role
+     */
     public List<Move> getLegalMoves(Role role) throws MoveDefinitionException{
         if (role.equals(getRole())){
             return getStateMachine().getLegalMoves(getCurrentState(), getRole());
@@ -191,11 +193,24 @@ public class UnityGamer extends StateMachineGamer
         }
     }
 
-    @Override
+    /**
+     * @return the role that this gamer is playing as in the game.
+     */
+    public final Role getOtherRole() {
+        return other;
+    }
+
+    /**
+     * @return the Evaluation of the players current state
+     */
     public String getEvaluation(){
         return "";
     }
 
+    /**
+     * @param timeout isn't really used at this moment, might remove entirely
+     * @return the current best move according to the MCTS class
+     */
     public List<Move> stateMachineSelectMoves(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException{
 
         StateMachine theMachine = getStateMachine();
@@ -204,6 +219,11 @@ public class UnityGamer extends StateMachineGamer
         lock1.writeLock().unlock();
         return li;
     }
+
+    /**
+     * Not used in this implementation
+     * @return Null
+     */
     public Move stateMachineSelectMove(long timeout) throws TransitionDefinitionException, MoveDefinitionException, GoalDefinitionException{
 
         return null;

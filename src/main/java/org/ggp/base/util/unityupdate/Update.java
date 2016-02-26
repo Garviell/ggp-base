@@ -5,16 +5,16 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import org.ggp.base.player.gamer.Gamer;
+import org.ggp.base.player.gamer.statemachine.unity.UnityGamer;
 import org.ggp.base.util.http.HttpReader;
 import org.ggp.base.util.http.HttpWriter;
 
 public final class Update extends Thread {
     private final int port;
-    private final Gamer gamer;
+    private final UnityGamer gamer;
     private ServerSocket listener;
 
-    public Update(int port, Gamer gamer) throws IOException{
+    public Update(int port, UnityGamer gamer) throws IOException{
         System.out.println("Unity update constructor on port: " + port);
         while(listener == null) {
             try {

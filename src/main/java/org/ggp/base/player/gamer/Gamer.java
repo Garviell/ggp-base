@@ -102,14 +102,6 @@ public abstract class Gamer implements Subject
     public final void setRoleName(GdlConstant roleName) {
         this.roleName = roleName;
     }
-    public List<Move> getLegalMoves(Role ss) throws MoveDefinitionException{
-        List<Move> dudu = new ArrayList<Move>();
-        return dudu;
-    }
-
-    public String getEvaluation(){
-        return "";
-    }
 
     // ==== Observer Stuff ====
     private final List<Observer> observers;

@@ -89,16 +89,9 @@ public abstract class StateMachineGamer extends Gamer
      */
     public final Role getRole()
     {
-        return me;
+        return role;
     }
 
-    /**
-     * Returns the role that this gamer is playing as in the game.
-     */
-    public final Role getOtherRole()
-    {
-        return other;
-    }
 
     /**
      * Returns the state machine.  This is used for calculating the next state and other operations, such as computing
@@ -116,7 +109,7 @@ public abstract class StateMachineGamer extends Gamer
      * only used in the Proxy, for players designed to run 24/7.
      */
     protected final void cleanupAfterMatch() {
-        me = null;
+        role = null;
         currentState = null;
         stateMachine = null;
         setMatch(null);
@@ -153,7 +146,7 @@ public abstract class StateMachineGamer extends Gamer
             }
 
             // Finally, switch over if everything went well.
-            me = newRole;
+            role = newRole;
             currentState = newCurrentState;
             stateMachine = newStateMachine;
         } catch (Exception e) {
@@ -171,7 +164,7 @@ public abstract class StateMachineGamer extends Gamer
         stateMachine = getInitialStateMachine();
         stateMachine.initialize(getMatch().getGame().getRules());
         currentState = stateMachine.getMachineStateFromSentenceList(getMatch().getMostRecentState());
-        me = stateMachine.getRoleFromConstant(getRoleName());
+        role = stateMachine.getRoleFromConstant(getRoleName());
     }
 
     // =====================================================================
@@ -194,7 +187,7 @@ public abstract class StateMachineGamer extends Gamer
             stateMachine = getInitialStateMachine();
             stateMachine.initialize(getMatch().getGame().getRules());
             currentState = stateMachine.getInitialState();
-            me = stateMachine.getRoleFromConstant(getRoleName());
+            role = stateMachine.getRoleFromConstant(getRoleName());
             //This is fine.
             List<Role> roles = stateMachine.getRoles();
             getMatch().appendState(currentState.getContents());
@@ -285,8 +278,7 @@ public abstract class StateMachineGamer extends Gamer
     }
 
     // Internal state about the current state of the state machine.
-    protected Role me;
-    protected Role other;
+    protected Role role;
     protected MachineState currentState;
     protected StateMachine stateMachine;
 }
